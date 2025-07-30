@@ -1,8 +1,10 @@
-
 import React, { useRef, useEffect, useState } from "react";
 import { io } from "socket.io-client";
 
-const socket = io("http://localhost:3001");
+// Connect to your backend
+const socket = io("https://kanishko-watch-party-backend.onrender.com", {
+  transports: ["websocket"],
+});
 
 function App() {
   const videoRef = useRef(null);
@@ -12,19 +14,28 @@ function App() {
   useEffect(() => {
     if (!joined) return;
 
+    console.log("🎯 Connecting to Socket.IO...");
+    socket.on("connect", () => {
+      console.log("🚀 Connected to socket:", socket.id);
+    });
+
     socket.on("play", () => {
+      console.log("🔊 Play received");
       videoRef.current.play();
     });
 
     socket.on("pause", () => {
+      console.log("⏸️ Pause received");
       videoRef.current.pause();
     });
 
     socket.on("seek", (time) => {
+      console.log("⏩ Seek received:", time);
       videoRef.current.currentTime = time;
     });
 
     return () => {
+      socket.off("connect");
       socket.off("play");
       socket.off("pause");
       socket.off("seek");
@@ -76,7 +87,10 @@ function App() {
             onPause={handlePause}
             onSeeked={handleSeek}
           >
-            <source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4" />
+            <source
+              src="https://www.w3schools.com/html/mov_bbb.mp4"
+              type="video/mp4"
+            />
           </video>
         </>
       )}
